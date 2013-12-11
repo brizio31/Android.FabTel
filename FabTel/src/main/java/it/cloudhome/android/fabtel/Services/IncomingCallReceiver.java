@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,13 +37,14 @@ public class IncomingCallReceiver extends BroadcastReceiver {
 	private AlertDialog adAnswer;
 	private String CallerID;
 
+    private SIPBroadcastService svc;
 
 	@Override
     public void onReceive(Context context, Intent intent) {
         incomingCall = null;
         i=intent;
         ctx=context;
-        /*
+
         try {
             listener = new SipAudioCall.Listener() {
                 @Override
@@ -68,6 +70,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
     			   ad.dismiss();
     		   }
             };
+            /*
             ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
             Log.d("IncomingCall VextUP","vvvvvvvvv Process 2 Kill vvvvvvvvvv");
             for (ActivityManager.RunningAppProcessInfo pid : am.getRunningAppProcesses()) {
@@ -76,6 +79,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                 Log.d("IncomingCall VextUP", pid.processName + "killed");
                 break;
             }
+            */
             getCall();
             StartRinging();
 	        adAnswer = new AlertDialog.Builder(context)
@@ -109,27 +113,31 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                 incomingCall.close();
             }
         }
-        */
+
     }
-    /*
+
+    public void setService(Service locSvc)
+    {
+        svc=(SIPBroadcastService) locSvc;
+    }
+
     private void DropCall()
     {
         StopRinging();
-        ActivitySIP wtActivity = (ActivitySIP) ctx;
+        //ActivitySIP wtActivity = (ActivitySIP) ctx;
         try {
-			incomingCall = wtActivity.mSipManager.takeAudioCall(i, listener);
+			incomingCall = svc.mSipManager.takeAudioCall(i, listener);
 			incomingCall.endCall();
 			
 		} catch (SipException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        wtActivity.call = incomingCall;	
+        svc.call = incomingCall;
     }
     private void Rispondi()
     {
        StopRinging();
-       ActivitySIP wtActivity = (ActivitySIP) ctx;
        try {
 	        incomingCall.answerCall(30);
 	        incomingCall.startAudio();
@@ -141,7 +149,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-       wtActivity.call = incomingCall;    	
+       svc.call = incomingCall;
        
        ad = new AlertDialog.Builder(ctx)
        .setIcon(android.R.drawable.ic_dialog_dialer)
@@ -208,9 +216,10 @@ public class IncomingCallReceiver extends BroadcastReceiver {
     }
     private void getCall()
     {
-        ActivitySIP wtActivity = (ActivitySIP) ctx;
         try {
-			incomingCall = wtActivity.mSipManager.takeAudioCall(i, listener);
+            if(svc==null)
+                svc = (SIPBroadcastService) ctx;
+			incomingCall = svc.mSipManager.takeAudioCall(i, listener);
 			CallerID=EstraiChiamante(incomingCall.getPeerProfile());
 				incomingCall.getPeerProfile().getUriString(); // .getDisplayName();
 			
@@ -218,7 +227,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        wtActivity.call = incomingCall;    	
+        svc.call = incomingCall;
     }
     private String EstraiChiamante(SipProfile profilo)
     {
@@ -233,5 +242,4 @@ public class IncomingCallReceiver extends BroadcastReceiver {
     	else
     		return Numero;
     }
-    */
 }

@@ -7,6 +7,13 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.sip.SipAudioCall;
+import android.net.sip.SipException;
+import android.net.sip.SipManager;
+import android.net.sip.SipProfile;
+import android.net.sip.SipRegistrationListener;
+import android.net.sip.SipSession;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
@@ -15,6 +22,7 @@ import android.util.Log;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,6 +46,19 @@ public class SIPBroadcastService extends Service {
 
     private boolean launched=false;
 
+    private Context ctx;
+    protected SipManager mSipManager = null;
+    protected SipProfile mSipProfile;
+    protected SipAudioCall call;
+
+    protected SipSession mSip;
+    protected IntentFilter filter;
+
+    private boolean wifiActive=false;
+
+    private IncomingCallReceiver callReceiver;
+
+    //region Override Metodi Base
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -57,9 +78,13 @@ public class SIPBroadcastService extends Service {
         super.onDestroy();
         shutdownService();
     }
+
+    //endregion
+
+    //region Avvio e Termine Servizio
     private void startService()
     {
-
+        CaricaSettings();
         timer.scheduleAtFixedRate(
                 new TimerTask() {
                     public void run() {
@@ -76,7 +101,9 @@ public class SIPBroadcastService extends Service {
         doNotify("Avvio Servizio", "Il Servizio è stato Terminato");
         Log.i(getClass().getSimpleName(), "Service stopped!!!");
     }
+    //endregion
 
+    //region Invio Messaggi di Notifica
     private void doNotify(String Title, String Message)
     {
         String ns = Context.NOTIFICATION_SERVICE;
@@ -107,6 +134,15 @@ public class SIPBroadcastService extends Service {
             chiamate=1;
     }
 
+    //endregion
+
+    public void sendCommand(String command)
+    {
+        if(command.equals("ANSWER_CALL"))
+        {
+            String a ="";
+        }
+    }
 
     //region Verifica Connessione WIFI
     private void LanciaApp()
@@ -125,31 +161,31 @@ public class SIPBroadcastService extends Service {
     }
     private void CheckWifiStatus()
     {
-        CaricaSettings();
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ls = wifiInfo.getLinkSpeed();
         String ssid = wifiInfo.getSSID().toLowerCase();
-        if(ssid.contains(SSID.toLowerCase()))
+        if(ssid.contains(SSID.toLowerCase()) && ls >0 )
         {
+            if(!wifiActive)
+            {
+                InitializeSIP();
+                doNotify("FabTel WIFI ON", "E' stata rilevata la copertura wifi selezionata il telefono verrà registrato");
+            }
+            wifiActive=true;
             LanciaApp();
         }
-            /*
-            else
-            {
-                //kill Process
-                ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-                Log.d("Service VextUP","vvvvvvvvv Process 2 Kill vvvvvvvvvv");
-                for (ActivityManager.RunningAppProcessInfo pid : am.getRunningAppProcesses()) {
-                    if (pid.processName.equals("it.solutions.innext.vextapp"))
-                        am.killBackgroundProcesses(pid.processName);
-                    Log.d("Service VextUP",pid.processName + "killed");
-                    break;
-                }
-            }
-            */
+        else
+        {
+            if(wifiActive)
+                doNotify("FabTel WIFI OFF", "E' stata persa la copertura wifi");
+            wifiActive=false;
+            TerminateSIP();
+            this.unregisterReceiver(callReceiver);
+        }
     }
 
-    public boolean isActivityRunning() {
+    private boolean isActivityRunning() {
 
         ActivityManager activityManager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
@@ -169,7 +205,7 @@ public class SIPBroadcastService extends Service {
         return false;
         //return isActivityFound;
     }
-    protected void CaricaSettings(){
+    private void CaricaSettings(){
         String strXML="";
         try {
             FileInputStream fis = openFileInput("user_settings.mod");
@@ -219,5 +255,178 @@ public class SIPBroadcastService extends Service {
         }
     }
     //endregion
+
+    //region Gestione SIP
+    /************ Gestione SIP Inizio ************/
+
+    protected void InitializeSIP() {
+        // TODO Auto-generated method stub
+        ctx=this;
+        if(mSipManager == null) {
+            mSipManager = SipManager.newInstance(this);
+        }
+        SipProfile.Builder builder;
+        try {
+
+            if(useVPN)
+                builder = new SipProfile.Builder(username, VPNServer);
+            else
+                builder = new SipProfile.Builder(username, SIPServer);
+            //builder = new SipProfile.Builder("6000", SIPServer);
+            //builder = new SipProfile.Builder(username, "192.168.200.106");
+            builder.setPassword(password);
+            //builder.setPassword("eurostands6000");
+            builder.setAuthUserName(username);
+            //builder.setAuthUserName("6000");
+            builder.setSendKeepAlive(true);
+            //builder.setAutoRegistration(true);
+            mSipProfile = builder.build();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        filter = new IntentFilter();
+        filter.addAction("it.cloudhome.android.fabtel.INCOMING_CALL");
+        callReceiver = new IncomingCallReceiver();
+        this.registerReceiver(callReceiver, filter);
+
+        Intent intent = new Intent();
+        intent.setAction("it.cloudhome.android.fabtel.INCOMING_CALL");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, Intent.FILL_IN_DATA);
+
+        try {
+            mSipManager.open(mSipProfile, pendingIntent, null);
+        } catch (SipException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            mSipManager.setRegistrationListener(mSipProfile.getUriString(),SIPRlistener);
+        } catch (SipException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    protected void TerminateSIP()
+    {
+
+        if (mSipManager == null) {
+            return;
+        }
+        try {
+            if (mSipProfile != null) {
+                mSipManager.close(mSipProfile.getUriString());
+            }
+        } catch (Exception ee) {
+            Log.d("TerminateSIP", "Failed to close local profile.", ee);
+        }
+    }
+
+    /* Listener x Registrazione e chiamata */
+    SipAudioCall.Listener SIPlistener = new SipAudioCall.Listener() {
+
+        @Override
+        public void onCallEstablished(SipAudioCall lcall) {
+            Log.e("Event", "SIP - Connected");
+            lcall.startAudio();
+            lcall.setSpeakerMode(true);
+            call=lcall;
+            /*
+            if(ctx instanceof Telefono)
+            {
+                ((Telefono) ctx).AggiornaStatus("Connected to ");
+                ((Telefono) ctx).AggiornaSpeaker();
+            }
+            */
+        }
+
+        @Override
+        public void onRingingBack (SipAudioCall lcall){
+            //mPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+            Log.e("Event", "SIP - Ringing " + lcall.toString());
+            call=lcall;
+        }
+
+        @Override
+        public void onCalling(SipAudioCall lcall) {
+            //call.startAudio();
+            //call.setSpeakerMode(true);
+            Log.e("Event", "SIP - Calling " + lcall.toString());
+        }
+        @Override
+        public void onRinging(SipAudioCall lcall, SipProfile caller)
+        {
+            boolean t = lcall.isInCall();
+            t=!t;
+        }
+        @Override
+        public void onError (SipAudioCall lcall, int errorCode, String errorMessage)
+        {
+            Log.e("Event","ERRORE SIP " + lcall.toString());
+            Log.e("Event","ERRORE SIP " + call.toString());
+
+            Log.e("Event", "SIP - Error");
+            Log.e("Event", errorMessage);
+            call=lcall;
+        }
+
+        @Override
+        public void onCallEnded(SipAudioCall lcall) {
+            // Do something.
+            Log.e("Event", "SIP - Call Ended " + lcall.toString());
+            lcall.close();
+            //ScreenOFF(false);
+
+            try {
+                //ad.dismiss();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    };
+
+
+    SipRegistrationListener SIPRlistener= new SipRegistrationListener() {
+
+        public void onRegistering(String localProfileUri) {
+            //SIPStato = "Registering with SIP Server...";
+            /*
+            tvMessage = "Fidoka PBX - SIP: Registering...";
+            tvColor = Color.BLUE;
+            UIhandler.post(AggiornaTextView);
+            */
+        }
+
+        @Override
+        public void onRegistrationDone(String localProfileUri, long expiryTime) {
+            //SIPStato = "Ready";
+            int inizio=localProfileUri.indexOf(':');
+            int fine=localProfileUri.indexOf('@');
+            /*
+            if(ctx instanceof Telefono)
+            {
+                ((Telefono) ctx).SIPStatus=true;
+                ((Telefono) ctx).AggiornaSIPStatus();
+            }
+            */
+        }
+
+        public void onRegistrationFailed(String localProfileUri, int errorCode,
+                                         String errorMessage) {
+            String SIPStato = "Registration failed.  Please check settings.";
+            /*
+            if(ctx instanceof Telefono)
+            {
+                ((Telefono) ctx).SIPStatus=false;
+                ((Telefono) ctx).AggiornaSIPStatus();
+            }
+            */
+        }
+    };
+
+    /************ Gestione SIP Fine ************/
+//endregion
 
 }

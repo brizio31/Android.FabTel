@@ -97,6 +97,7 @@ public class ActivitySIP extends Activity {
 
     protected boolean vpnEnabled=false;
 
+    //region Gestione SIP
     /************ Gestione SIP Inizio ************/
 
     protected void InitializeSIP(Context context) {
@@ -267,5 +268,6 @@ public class ActivitySIP extends Activity {
     };
 
     /************ Gestione SIP Fine ************/
+//endregion
 
 }
