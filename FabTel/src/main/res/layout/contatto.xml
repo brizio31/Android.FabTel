@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="60dip"
+        android:padding="5dip"
+        android:background="#e7e7e7">
+
+
+        <ImageView
+                android:id="@+id/contattoImage"
+                android:layout_width="38dip"
+                android:layout_height="50dip"
+        >
+        </ImageView>
+
+
+        <TextView
+                android:text="Nome"
+                android:textColor="#444444"
+                android:layout_marginLeft="5dip"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/contattoNome"
+                android:layout_toRightOf="@id/contattoImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+        </TextView>
+        <TextView
+                android:text="Interno"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#6b71f1"
+                android:id="@+id/contattoInterno"
+                android:layout_alignLeft="@+id/contattoNome"
+                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+        </TextView>
+        <TextView
+                android:text="Stato"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#6b71f1"
+                android:id="@+id/contattoStato"
+                android:layout_marginLeft="90dip"
+                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+        </TextView>
+        <ImageView
+                android:id="@+id/phoneImage"
+                android:layout_width="35dip"
+                android:layout_height="35dip"
+                android:layout_alignParentRight="true">
+        </ImageView>
+</RelativeLayout>

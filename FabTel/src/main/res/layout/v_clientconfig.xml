@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Centrale:"
+            android:id="@+id/textView"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="56dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Utente:"
+            android:id="@+id/textView2"
+            android:layout_marginTop="31dp"
+            android:layout_below="@+id/textView"
+            android:layout_alignLeft="@+id/textView" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Password:"
+            android:id="@+id/textView3"
+            android:layout_marginTop="31dp"
+            android:layout_below="@+id/textView2"
+            android:layout_alignLeft="@+id/textView2" />
+
+        <EditText
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/vconf_txCodice"
+            android:layout_above="@+id/textView2"
+            android:layout_toRightOf="@+id/textView"
+            android:layout_marginLeft="31dp"
+            android:maxLength="12"
+            android:layout_alignParentRight="true" />
+
+        <EditText
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/vconf_txLogin"
+            android:layout_alignBottom="@+id/textView2"
+            android:layout_alignLeft="@+id/vconf_txCodice"
+            android:layout_alignParentRight="true" />
+
+        <EditText
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10"
+            android:id="@+id/vconf_txPassword"
+            android:layout_alignBottom="@+id/textView3"
+            android:layout_alignLeft="@+id/vconf_txLogin"
+            android:layout_alignParentRight="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Richiedi Configurazione"
+            android:id="@+id/vconf_cmdConfigura"
+            android:layout_marginBottom="52dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:onClick="RichiediConfig" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Usa VPN"
+            android:id="@+id/vconf_chkVPN"
+            android:layout_marginTop="20dp"
+            android:checked="false"
+            android:layout_below="@+id/vconf_txPassword"
+            android:layout_alignLeft="@+id/vconf_txPassword" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Attivazione Automatica"
+            android:id="@+id/chkAttivazione"
+            android:checked="false"
+            android:layout_below="@+id/vconf_chkVPN"
+            android:layout_alignLeft="@+id/vconf_chkVPN" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="SSID:"
+            android:id="@+id/textView4"
+            android:layout_below="@+id/chkAttivazione"
+            android:layout_alignLeft="@+id/textView3"
+            android:layout_marginTop="31dp" />
+
+        <EditText
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:id="@+id/vconf_txSSID"
+            android:layout_alignBottom="@+id/textView4"
+            android:layout_alignParentRight="true"
+            android:layout_alignLeft="@+id/chkAttivazione" />
+
+
+    </RelativeLayout>
+</LinearLayout>

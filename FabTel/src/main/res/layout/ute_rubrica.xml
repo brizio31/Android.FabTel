@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="60dip"
+        android:padding="5dip"
+        android:background="#e7e7e7">
+
+
+        <ImageView
+                android:id="@+id/rubricaImage"
+                android:layout_width="38dip"
+                android:layout_height="50dip"
+                android:src="@drawable/ico_profilo"
+        >
+        </ImageView>
+
+        <TextView
+                android:text="Nome"
+                android:textColor="#444444"
+                android:layout_marginLeft="5dip"
+                android:layout_toRightOf="@id/rubricaImage" 
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/rubricaNome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+        </TextView>
+        <TextView
+                android:text="Numero"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#6b71f1"
+                android:id="@+id/rubricaNumero"
+                android:layout_alignLeft="@+id/rubricaNome"
+                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+        </TextView>
+</RelativeLayout>

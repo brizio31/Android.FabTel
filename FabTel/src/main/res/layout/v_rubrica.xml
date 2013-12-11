@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        >
+    <TextView 
+    	android:layout_width="wrap_content" 
+    	android:layout_alignParentLeft="true" 
+    	android:text="Cerca"
+    	android:layout_height="wrap_content" 
+    	android:id="@+id/textView1" 
+    	android:layout_marginLeft="12dip"
+    	android:layout_marginTop="20dip" android:onClick="GetPosition">
+    </TextView>
+	<EditText  
+			android:id="@+id/TxRicerca" 
+			android:layout_width="180dip" 
+			android:text="" 
+			android:layout_marginLeft="60dip"
+			android:layout_marginTop="10dip"
+			android:textSize="13sp" 
+			android:layout_x="176dip" 
+			android:layout_y="288dip" 
+			android:layout_height="40dip">
+	</EditText>
+	<ImageView 
+		android:layout_width="30dip" 
+		android:id="@+id/imageView1" 
+		android:src="@drawable/cerca" 
+		android:layout_height="30dip" 
+		android:layout_toRightOf="@+id/TxRicerca" 
+		android:layout_alignTop="@+id/TxRicerca" 
+		android:layout_alignBottom="@+id/TxRicerca"
+		android:onClick="RubricaRicarica">
+	</ImageView>
+        <ListView
+				android:layout_marginTop="50dip"
+                android:id="@+id/rubricaListView"
+                android:layout_width="fill_parent"
+                android:layout_height="380dip">
+        </ListView>
+</RelativeLayout>
